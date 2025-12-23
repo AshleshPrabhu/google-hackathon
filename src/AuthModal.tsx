@@ -1,16 +1,87 @@
 import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
+import { auth, db } from "./firebase";
+import { createUserWithEmailAndPassword, GoogleAuthProvider, signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
+import { doc, setDoc, getDoc } from "firebase/firestore";
+import { toast } from 'sonner';
+import { useNavigate } from 'react-router';
+
+
+export async function saveUserToDB(user: any) {
+
+  const userRef = doc(db, "users", user.uid);
+  const userSnap = await getDoc(userRef);
+
+  if (!userSnap.exists()) {
+    await setDoc(userRef, {
+      uid: user.uid,
+      name: user.displayName ?? "",
+      email: user.email,
+      image: user.photoURL ?? "",
+      createdAt: new Date()
+    });
+  }
+}
+
 
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onGmailLogin: () => void;
   initialMode?: 'signin' | 'signup';
 }
 
-export default function AuthModal({ isOpen, onClose, onGmailLogin, initialMode = 'signup' }: AuthModalProps) {
+export default function AuthModal({ isOpen, onClose, initialMode = 'signup' }: AuthModalProps) {
   const [isSignup, setIsSignup] = useState(initialMode === 'signup');
-
+  const [email, setEmail] = useState<string>()
+  const [password, setPassword] = useState<string>()
+  
+  const navigate = useNavigate();
+  
+  const onGmailLogin = async()=>{
+    const provider = new GoogleAuthProvider();
+    try {
+      const res = await signInWithPopup(auth, provider);
+      await saveUserToDB(res.user);
+      toast.success("Signed in successfully!");
+      navigate('/dashboard');
+      
+    } catch (error) {
+      toast.error("Error signing in with Google");
+      console.error("Error signing in with Google:", error);
+    }
+  
+  }
+  
+  const emailAuth = async(email: string | undefined, password: string | undefined, type:"signup"|"signin")=>{
+    if(!email || !password) {
+      toast.error("Please provide both email and password");
+      return;
+    }
+    if(type==="signup"){
+      try {
+        const res = await createUserWithEmailAndPassword(auth, email, password);
+        await saveUserToDB(res.user);
+        toast.success("Account created successfully!");
+        navigate('/dashboard');
+  
+  
+      } catch (error) {
+        toast.error("Error creating account");
+        console.error("Error creating account:", error);
+        
+      }
+    }else if(type==="signin"){
+      try {
+        const res = await signInWithEmailAndPassword(auth, email, password);
+        console.log(res);
+        toast.success("Signed in successfully!");
+        navigate('/dashboard');
+      } catch (error) {
+        toast.error("Error signing in , check if you have an account");
+        console.error("Error signing in:", error);
+      }
+    }
+  }
   useEffect(() => {
     if (isOpen) {
       setIsSignup(initialMode === 'signup');
@@ -42,23 +113,32 @@ export default function AuthModal({ isOpen, onClose, onGmailLogin, initialMode =
           <input
             type="email"
             placeholder="Email address"
+            value={email}
+            onChange={(e)=>setEmail(e.target.value)}
             className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:bg-slate-800 transition-all duration-300"
           />
           <input
             type="password"
             placeholder="Password"
+            value={password}
+            onChange={(e)=>setPassword(e.target.value)}
             className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:bg-slate-800 transition-all duration-300"
           />
-          {isSignup && (
+          {/* {isSignup && (
             <input
               type="password"
               placeholder="Confirm password"
+              value={password}
+              onChange={(e)=>setPassword(e.target.value)}
               className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:bg-slate-800 transition-all duration-300"
             />
-          )}
+          )} */}
         </div>
 
-        <button className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-semibold py-3 rounded-lg transition-all duration-300 mb-4 shadow-lg shadow-blue-500/20">
+        <button className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-semibold py-3 rounded-lg transition-all duration-300 mb-4 shadow-lg shadow-blue-500/20" 
+        onClick={()=>emailAuth(email,password,isSignup?"signup":"signin")}
+        
+        >
           {isSignup ? 'Create Account' : 'Sign In'}
         </button>
 

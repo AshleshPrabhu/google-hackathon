@@ -1,9 +1,9 @@
 import { ArrowRight, Package, Key, Wallet, Droplet, Headphones, CreditCard } from 'lucide-react';
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import Header from './Header';
-import AuthModal from './AuthModal';
+import AuthModal from './AuthModal';  
 
+//@ts-ignore
 function AnimatedItem({ icon: Icon, label, delay }) {
   return (
     <div
@@ -23,7 +23,6 @@ function AnimatedItem({ icon: Icon, label, delay }) {
 }
 
 function App() {
-  const navigate = useNavigate();
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signup');
 
@@ -37,10 +36,6 @@ function App() {
     setAuthModalOpen(true);
   };
 
-  const handleGmailLogin = () => {
-    setAuthModalOpen(false);
-    navigate('/dashboard');
-  };
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 overflow-hidden">
       <style>{`
@@ -189,17 +184,13 @@ function App() {
       <AuthModal 
         isOpen={authModalOpen} 
         onClose={() => setAuthModalOpen(false)}
-        onGmailLogin={handleGmailLogin}
         initialMode={authMode}
       />
 
       <div className="min-h-screen flex items-center justify-center px-6 pt-40">
         <div className="grid grid-cols-2 gap-12 max-w-6xl w-full items-center">
-          {/* Left side - Box with animated items */}
           <div className="flex items-center justify-center relative h-96 box-perspective pt-20">
-            {/* 3D Cube Box */}
             <div className="relative box-3d-container">
-              {/* Cube Faces */}
               <div className="cube-face cube-front">
                 <div className="box-label">
                   <div className="box-label-text">LOST &<br/>FOUND</div>
@@ -211,9 +202,7 @@ function App() {
               <div className="cube-face cube-top"></div>
               <div className="cube-face cube-bottom"></div>
 
-              {/* Items bursting out */}
               <div className="absolute inset-0 pointer-events-none">
-                {/* Key - Top Left */}
                 <div
                   className="absolute left-1/2 bottom-1/3 -translate-x-1/2 animate-burst"
                   style={{ animationDelay: '0s', '--tx': '-80px', '--ty': '-180px' } as any}
@@ -223,7 +212,6 @@ function App() {
                   </div>
                 </div>
 
-                {/* Wallet - Top Right */}
                 <div
                   className="absolute left-1/2 bottom-1/3 -translate-x-1/2 animate-burst"
                   style={{ animationDelay: '0.4s', '--tx': '80px', '--ty': '-180px' } as any}
@@ -233,7 +221,6 @@ function App() {
                   </div>
                 </div>
 
-                {/* Water Bottle - Middle Left */}
                 <div
                   className="absolute left-1/2 bottom-1/3 -translate-x-1/2 animate-burst"
                   style={{ animationDelay: '0.8s', '--tx': '-50px', '--ty': '-220px' } as any}
@@ -243,7 +230,6 @@ function App() {
                   </div>
                 </div>
 
-                {/* Earphones - Middle Right */}
                 <div
                   className="absolute left-1/2 bottom-1/3 -translate-x-1/2 animate-burst"
                   style={{ animationDelay: '1.2s', '--tx': '50px', '--ty': '-220px' } as any}
@@ -253,7 +239,6 @@ function App() {
                   </div>
                 </div>
 
-                {/* ID Card - Center High */}
                 <div
                   className="absolute left-1/2 bottom-1/3 -translate-x-1/2 animate-burst"
                   style={{ animationDelay: '1.6s', '--tx': '0px', '--ty': '-260px' } as any}
@@ -263,7 +248,6 @@ function App() {
                   </div>
                 </div>
 
-                {/* Package - Bottom Center */}
                 <div
                   className="absolute left-1/2 bottom-1/3 -translate-x-1/2 animate-burst"
                   style={{ animationDelay: '2s', '--tx': '-120px', '--ty': '-150px' } as any}
@@ -276,7 +260,6 @@ function App() {
             </div>
           </div>
 
-          {/* Right side - Hero content */}
           <div className="space-y-8">
             <div>
               <h1 className="text-6xl font-bold text-white mb-6 leading-tight">
