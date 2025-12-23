@@ -1,11 +1,18 @@
 import { Package, Search, BarChart3, Menu, X, Upload, Check, Clock, Zap, X as XIcon, Sparkles } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useAuth } from './context/AuthContext';
+import { toast } from 'sonner';
+import { uploadToCloudinary } from './cloudinary';
+import { addDoc, collection, getDocs, orderBy, query, serverTimestamp, where } from 'firebase/firestore';
+import { db } from './firebase';
 
 interface LostItem {
   id: string;
   image: string;
   name: string;
-  company: string;
+  location: string;
+  raw_description: string;
+  category: string;
   status: 'lost' | 'found';
   dateAdded: string;
 }
@@ -14,7 +21,9 @@ interface FoundItem {
   id: string;
   image: string;
   name: string;
-  company: string;
+  location: string;
+  raw_description: string;
+  category: string; 
   dateFound: string;
   status: 'returned' | 'not-returned';
 }
@@ -23,7 +32,10 @@ interface MatchedItem {
   id: string;
   image: string;
   name: string;
-  company: string;
+  raw_description: string;
+  location: string;
+  category: string;
+
   date: string;
   matchPercentage: number;
 }
@@ -31,54 +43,52 @@ interface MatchedItem {
 export default function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [activeView, setActiveView] = useState<'home' | 'lost' | 'found' | 'dashboard' | 'heatmap'>('home');
-  
+  const {user} = useAuth();
   const [selectedLostItem, setSelectedLostItem] = useState<LostItem | null>(null);
   const [selectedFoundItem, setSelectedFoundItem] = useState<FoundItem | null>(null);
   
   const [lostFormData, setLostFormData] = useState({
     image: null as File | null,
     name: '',
-    company: '',
+    raw_description: '',
+    category: '',
+    location: '',
   });
   
   const [foundFormData, setFoundFormData] = useState({
     image: null as File | null,
     name: '',
-    company: '',
+    raw_description: '',
+    category: '',
+    location: '',
   });
+
+  const [lostItems, setLostItems] = useState<LostItem[]>([]);
+
+  const [foundItems, setFoundItems] = useState<FoundItem[]>([]);
+  
+  useEffect(() => {
+    if (!user) return;
+
+    const loadData = async () => {
+      // setLoading(true);
+
+      const [lost, found] = await Promise.all([
+        fetchUserLostItems(user.uid),
+        fetchUserFoundItems(user.uid),
+      ]);
+
+      setLostItems(lost as LostItem[]);
+      setFoundItems(found as FoundItem[]);
+
+      // setLoading(false);
+    };
+
+    loadData();
+  }, [user]);
 
   const [lostCarouselIndex, setLostCarouselIndex] = useState(0);
   const [foundCarouselIndex, setFoundCarouselIndex] = useState(0);
-
-  const [lostItems, setLostItems] = useState<LostItem[]>([
-    {
-      id: '1',
-      image: 'https://via.placeholder.com/200?text=Lost+Wallet',
-      name: 'Black Leather Wallet',
-      company: 'Coach',
-      status: 'lost',
-      dateAdded: '2025-12-20',
-    },
-    {
-      id: '2',
-      image: 'https://via.placeholder.com/200?text=Lost+Keys',
-      name: 'Car Keys',
-      company: 'Tesla',
-      status: 'found',
-      dateAdded: '2025-12-18',
-    },
-  ]);
-
-  const [foundItems, setFoundItems] = useState<FoundItem[]>([
-    {
-      id: '1',
-      image: 'https://via.placeholder.com/200?text=Found+Phone',
-      name: 'iPhone 15 Pro',
-      company: 'Apple',
-      dateFound: '2025-12-19',
-      status: 'not-returned',
-    },
-  ]);
 
   const getMatchedFoundItems = (lostItem: LostItem): MatchedItem[] => {
     return [
@@ -86,7 +96,9 @@ export default function Dashboard() {
         id: '1',
         image: 'https://via.placeholder.com/200?text=Match+1',
         name: 'Similar Item Found',
-        company: lostItem.company,
+        location: lostItem.location,
+        category: lostItem.category,
+        raw_description: lostItem.raw_description,
         date: '2025-12-19',
         matchPercentage: 92,
       },
@@ -94,7 +106,9 @@ export default function Dashboard() {
         id: '2',
         image: 'https://via.placeholder.com/200?text=Match+2',
         name: 'Possible Match',
-        company: lostItem.company,
+        location: lostItem.location,
+        category: lostItem.category,
+        raw_description: lostItem.raw_description,
         date: '2025-12-18',
         matchPercentage: 78,
       },
@@ -102,7 +116,9 @@ export default function Dashboard() {
         id: '3',
         image: 'https://via.placeholder.com/200?text=Match+3',
         name: 'Related Item',
-        company: lostItem.company,
+        location: lostItem.location,
+        category: lostItem.category,
+        raw_description: lostItem.raw_description,
         date: '2025-12-17',
         matchPercentage: 65,
       },
@@ -115,7 +131,9 @@ export default function Dashboard() {
         id: '1',
         image: 'https://via.placeholder.com/200?text=Lost+Match+1',
         name: 'Similar Lost Item',
-        company: foundItem.company,
+        location: foundItem.location,
+        category: foundItem.category,
+        raw_description: foundItem.raw_description,
         date: '2025-12-20',
         matchPercentage: 88,
       },
@@ -123,7 +141,9 @@ export default function Dashboard() {
         id: '2',
         image: 'https://via.placeholder.com/200?text=Lost+Match+2',
         name: 'Possible Lost Match',
-        company: foundItem.company,
+        location: foundItem.location,
+        category: foundItem.category,
+        raw_description: foundItem.raw_description,
         date: '2025-12-19',
         matchPercentage: 75,
       },
@@ -131,7 +151,9 @@ export default function Dashboard() {
         id: '3',
         image: 'https://via.placeholder.com/200?text=Lost+Match+3',
         name: 'Related Lost Item',
-        company: foundItem.company,
+        location: foundItem.location  ,
+        category: foundItem.category,
+        raw_description: foundItem.raw_description,
         date: '2025-12-18',
         matchPercentage: 62,
       },
@@ -158,36 +180,146 @@ export default function Dashboard() {
     }
   };
 
-  const handleLostSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const newItem: LostItem = {
-      id: Date.now().toString(),
-      image: lostFormData.image ? URL.createObjectURL(lostFormData.image) : 'https://via.placeholder.com/200',
-      name: lostFormData.name,
-      company: lostFormData.company,
-      status: 'lost',
-      dateAdded: new Date().toISOString().split('T')[0],
-    };
-    setLostItems([...lostItems, newItem]);
-    setLostFormData({ image: null, name: '', company: '' });
-    alert('Lost item reported successfully!');
-    setActiveView('dashboard');
+  const fetchUserLostItems = async (userId: string) => {
+    const q = query(
+      collection(db, "lost_items"),
+      where("userId", "==", userId),
+      orderBy("createdAt", "desc")
+    );
+
+    const snap = await getDocs(q);
+
+    return snap.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
   };
 
-  const handleFoundSubmit = (e: React.FormEvent) => {
+  const fetchUserFoundItems = async (userId: string) => {
+    const q = query(
+      collection(db, "found_items"),
+      where("userId", "==", userId),
+      orderBy("createdAt", "desc")
+    );
+
+    const snap = await getDocs(q);
+
+    return snap.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+  };
+
+  const handleLostSubmit = async(e: React.FormEvent) => {
     e.preventDefault();
-    const newItem: FoundItem = {
-      id: Date.now().toString(),
-      image: foundFormData.image ? URL.createObjectURL(foundFormData.image) : 'https://via.placeholder.com/200',
-      name: foundFormData.name,
-      company: foundFormData.company,
-      dateFound: new Date().toISOString().split('T')[0],
-      status: 'not-returned',
-    };
-    setFoundItems([...foundItems, newItem]);
-    setFoundFormData({ image: null, name: '', company: '' });
-    alert('Found item reported successfully!');
-    setActiveView('dashboard');
+
+    if (!user) {
+      toast.error("Please login first");
+      return;
+    }
+
+    if (!lostFormData.image) {
+      toast.error("Please upload an image");
+      return;
+    }
+
+    try {
+      toast.loading("Uploading item...");
+
+      // 1️⃣ Upload image to Cloudinary
+      const uploadRes = await uploadToCloudinary(lostFormData.image);
+
+      const photoUrl = uploadRes.secure_url;
+
+      // 2️⃣ Save item to Firestore
+      await addDoc(collection(db, "lost_items"), {
+        userId: user.uid,
+        name: lostFormData.name,
+        rawDescription: lostFormData.raw_description,
+        semanticDescription: "",
+        category: lostFormData.category,
+        photoUrl,
+        // location: {
+        //   lat: lostFormData.location.lat,
+        //   lng: lostFormData.location.lng,
+        // },
+        location: lostFormData.location,
+        status: "active",
+        embeddingId: null,
+        createdAt: serverTimestamp(),
+      });
+
+      toast.success("Lost item reported successfully!");
+
+      // 3️⃣ Reset form
+      setLostFormData({
+        image: null,
+        name: "",
+        location: "",
+        category: "",
+        raw_description: "",
+      });
+
+      setActiveView("dashboard");
+    } catch (error) {
+      console.error("Lost item submit error:", error);
+      toast.error("Failed to report lost item");
+    } finally {
+      toast.dismiss();
+    }
+  };
+
+  const handleFoundSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!user) {
+      toast.error("Please login first");
+      return;
+    }
+
+    if (!foundFormData.image) {
+      toast.error("Please upload an image");
+      return;
+    }
+
+    try {
+      toast.loading("Uploading found item...");
+      const uploadRes = await uploadToCloudinary(foundFormData.image);
+      const photoUrl = uploadRes.secure_url;
+      await addDoc(collection(db, "found_items"), {
+        userId: user.uid,
+        name: foundFormData.name,
+        rawDescription: foundFormData.raw_description,
+        semanticDescription: "", 
+        category: foundFormData.category,
+        photoUrl,
+        // location: {
+        //   lat: foundFormData.location.lat,
+        //   lng: foundFormData.location.lng,
+        // },
+        location: foundFormData.location,
+        status: "active", // active | returned | matched
+        embeddingId: null,
+        createdAt: serverTimestamp(),
+      });
+
+      toast.success("Found item reported successfully!");
+
+      setFoundFormData({
+        image: null,
+        name: "",
+        location: "",
+        category: "",
+        raw_description: "",
+      });
+
+      setActiveView("dashboard");
+    } catch (error) {
+      console.error("Found item submit error:", error);
+      toast.error("Failed to report found item");
+    } finally {
+      toast.dismiss();
+    }
   };
 
   const toggleFoundItemStatus = (itemId: string) => {
@@ -269,7 +401,7 @@ export default function Dashboard() {
               </div>
               <div className="flex-1">
                 <h3 className="text-2xl font-bold text-white mb-2">{sourceItem.name}</h3>
-                <p className="text-gray-400 text-lg mb-4">{sourceItem.company}</p>
+                <p className="text-gray-400 text-lg mb-4">{sourceItem.location}</p>
                 <p className="text-sm text-gray-500">
                   {isLostItemMode ? `Reported: ${'dateAdded' in sourceItem ? sourceItem.dateAdded : ''}` : `Found: ${'dateFound' in sourceItem ? sourceItem.dateFound : ''}`}
                 </p>
@@ -298,7 +430,7 @@ export default function Dashboard() {
                           <div className="flex items-start justify-between mb-2">
                             <div>
                               <h3 className="text-xl font-bold text-white mb-1">{item.name}</h3>
-                              <p className="text-gray-400">{item.company}</p>
+                              <p className="text-gray-400">{item.location}</p>
                             </div>
                             <div className="flex flex-col items-center">
                               <div className="relative w-24 h-24 flex items-center justify-center">
@@ -644,12 +776,36 @@ export default function Dashboard() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-semibold text-gray-300 mb-2">Company/Brand</label>
+                      <label className="block text-sm font-semibold text-gray-300 mb-2">Raw Description</label>
                       <input
                         type="text"
                         required
-                        value={lostFormData.company}
-                        onChange={(e) => setLostFormData({ ...lostFormData, company: e.target.value })}
+                        value={lostFormData.raw_description}
+                        onChange={(e) => setLostFormData({ ...lostFormData, raw_description: e.target.value })}
+                        placeholder="e.g., Coach, Apple, etc."
+                        className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-300 mb-2">Category</label>
+                      <input
+                        type="text"
+                        required
+                        value={lostFormData.category}
+                        onChange={(e) => setLostFormData({ ...lostFormData, category: e.target.value })}
+                        placeholder="e.g., Coach, Apple, etc."
+                        className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-300 mb-2">Location</label>
+                      <input
+                        type="text"
+                        required
+                        value={lostFormData.location}
+                        onChange={(e) => setLostFormData({ ...lostFormData, location: e.target.value })}
                         placeholder="e.g., Coach, Apple, etc."
                         className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all"
                       />
@@ -685,9 +841,18 @@ export default function Dashboard() {
                       <p className="text-white font-semibold">{lostFormData.name || 'Not provided'}</p>
                     </div>
                     <div className="p-3 bg-slate-800/50 rounded-lg">
-                      <p className="text-xs text-gray-500">Company</p>
-                      <p className="text-white font-semibold">{lostFormData.company || 'Not provided'}</p>
+                      <p className="text-xs text-gray-500">Raw Description</p>
+                      <p className="text-white font-semibold">{lostFormData.raw_description || 'Not provided'}</p>
                     </div>
+                    <div className="p-3 bg-slate-800/50 rounded-lg">
+                      <p className="text-xs text-gray-500">Location</p>
+                      <p className="text-white font-semibold">{lostFormData.location || 'Not provided'}</p>
+                    </div>
+                    <div className="p-3 bg-slate-800/50 rounded-lg">
+                      <p className="text-xs text-gray-500">Category</p>
+                      <p className="text-white font-semibold">{lostFormData.category || 'Not provided'}</p>
+                    </div>
+
                   </div>
                 </div>
               </div>
@@ -732,16 +897,41 @@ export default function Dashboard() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-semibold text-gray-300 mb-2">Company/Brand</label>
+                      <label className="block text-sm font-semibold text-gray-300 mb-2">Raw description</label>
                       <input
                         type="text"
                         required
-                        value={foundFormData.company}
-                        onChange={(e) => setFoundFormData({ ...foundFormData, company: e.target.value })}
+                        value={foundFormData.raw_description}
+                        onChange={(e) => setFoundFormData({ ...foundFormData, raw_description: e.target.value })}
                         placeholder="e.g., Apple, Samsung, etc."
                         className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-green-500/50 focus:ring-1 focus:ring-green-500/20 transition-all"
                       />
                     </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-300 mb-2">Category</label>
+                      <input
+                        type="text"
+                        required
+                        value={foundFormData.category}
+                        onChange={(e) => setFoundFormData({ ...foundFormData, category: e.target.value })}
+                        placeholder="e.g., Apple, Samsung, etc."
+                        className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-green-500/50 focus:ring-1 focus:ring-green-500/20 transition-all"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-300 mb-2">Location</label>
+                      <input
+                        type="text"
+                        required
+                        value={foundFormData.location}
+                        onChange={(e) => setFoundFormData({ ...foundFormData, location: e.target.value })}
+                        placeholder="e.g., Apple, Samsung, etc."
+                        className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-green-500/50 focus:ring-1 focus:ring-green-500/20 transition-all"
+                      />
+                    </div>
+
                     <button
                       type="submit"
                       className="w-full mt-8 px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold rounded-lg transition-all duration-300 shadow-lg shadow-green-500/20"
@@ -772,8 +962,16 @@ export default function Dashboard() {
                       <p className="text-white font-semibold">{foundFormData.name || 'Not provided'}</p>
                     </div>
                     <div className="p-3 bg-slate-800/50 rounded-lg">
-                      <p className="text-xs text-gray-500">Company</p>
-                      <p className="text-white font-semibold">{foundFormData.company || 'Not provided'}</p>
+                      <p className="text-xs text-gray-500">Raw description</p>
+                      <p className="text-white font-semibold">{foundFormData.raw_description || 'Not provided'}</p>
+                    </div>
+                    <div className="p-3 bg-slate-800/50 rounded-lg">
+                      <p className="text-xs text-gray-500">Category</p>
+                      <p className="text-white font-semibold">{foundFormData.category || 'Not provided'}</p>
+                    </div>
+                    <div className="p-3 bg-slate-800/50 rounded-lg">
+                      <p className="text-xs text-gray-500">Location</p>
+                      <p className="text-white font-semibold">{foundFormData.location || 'Not provided'}</p>
                     </div>
                   </div>
                 </div>
@@ -873,7 +1071,7 @@ export default function Dashboard() {
                                   </div>
                                   <div className="p-6">
                                     <h3 className="text-lg font-bold text-white mb-2">{item.name}</h3>
-                                    <p className="text-sm text-gray-400 mb-4">{item.company}</p>
+                                    <p className="text-sm text-gray-400 mb-4">{item.location}</p>
                                     <div className="flex items-center justify-between pt-4 border-t border-slate-700/50">
                                       <span className="text-xs text-gray-500">{item.dateAdded}</span>
                                       <div
@@ -976,7 +1174,7 @@ export default function Dashboard() {
                                   </div>
                                   <div className="p-6">
                                     <h3 className="text-lg font-bold text-white mb-2">{item.name}</h3>
-                                    <p className="text-sm text-gray-400 mb-4">{item.company}</p>
+                                    <p className="text-sm text-gray-400 mb-4">{item.location}</p>
                                     <div className="flex items-center justify-between pt-4 border-t border-slate-700/50 mb-4">
                                       <span className="text-xs text-gray-500">{item.dateFound}</span>
                                     </div>
