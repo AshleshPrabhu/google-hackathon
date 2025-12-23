@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X } from 'lucide-react';
+import { X, Eye, EyeOff } from 'lucide-react';
 import { auth, db } from "./firebase";
 import { createUserWithEmailAndPassword, GoogleAuthProvider, signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
 import { doc, setDoc, getDoc } from "firebase/firestore";
@@ -34,6 +34,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'signup' }: A
   const [isSignup, setIsSignup] = useState(initialMode === 'signup');
   const [email, setEmail] = useState<string>()
   const [password, setPassword] = useState<string>()
+  const [showPassword, setShowPassword] = useState(false);
   
   const navigate = useNavigate();
   
@@ -117,13 +118,26 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'signup' }: A
             onChange={(e)=>setEmail(e.target.value)}
             className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:bg-slate-800 transition-all duration-300"
           />
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e)=>setPassword(e.target.value)}
-            className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:bg-slate-800 transition-all duration-300"
-          />
+          <div className="relative">
+            <input
+              type={showPassword ? "text" : "password"}
+              placeholder="Password"
+              value={password}
+              onChange={(e)=>setPassword(e.target.value)}
+              className="w-full px-4 py-3 pr-12 bg-slate-800/50 border border-slate-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:bg-slate-800 transition-all duration-300"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-200 transition-colors duration-300 p-1 hover:bg-slate-700/50 rounded-md"
+            >
+              {showPassword ? (
+                <EyeOff className="w-5 h-5" />
+              ) : (
+                <Eye className="w-5 h-5" />
+              )}
+            </button>
+          </div>
           {/* {isSignup && (
             <input
               type="password"
