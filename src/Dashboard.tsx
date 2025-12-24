@@ -4,7 +4,8 @@ import { useAuth } from './context/AuthContext';
 import { toast } from 'sonner';
 import { uploadToCloudinary } from './cloudinary';
 import { addDoc, collection, getDocs, orderBy, query, serverTimestamp, where } from 'firebase/firestore';
-import { db } from './firebase';
+import { auth, db } from './firebase';
+import { signOut } from 'firebase/auth';
 
 interface LostItem {
   id: string;
@@ -86,6 +87,16 @@ export default function Dashboard() {
 
     loadData();
   }, [user]);
+
+  const logoutUser = async () => {
+    try {
+      await signOut(auth);
+      toast.success("Signed out successfully");
+    } catch (error) {
+      console.error("Sign out error:", error);
+      toast.error("Failed to sign out");
+    }
+  };
 
   const [lostCarouselIndex, setLostCarouselIndex] = useState(0);
   const [foundCarouselIndex, setFoundCarouselIndex] = useState(0);
@@ -223,22 +234,20 @@ export default function Dashboard() {
       return;
     }
 
+    const toastId = toast.loading("Uploading item...");
     try {
-      toast.loading("Uploading item...");
 
-      // 1️⃣ Upload image to Cloudinary
       const uploadRes = await uploadToCloudinary(lostFormData.image);
 
-      const photoUrl = uploadRes.secure_url;
+      const image = uploadRes.secure_url;
 
-      // 2️⃣ Save item to Firestore
       await addDoc(collection(db, "lost_items"), {
         userId: user.uid,
         name: lostFormData.name,
         rawDescription: lostFormData.raw_description,
         semanticDescription: "",
         category: lostFormData.category,
-        photoUrl,
+        image: image,
         // location: {
         //   lat: lostFormData.location.lat,
         //   lng: lostFormData.location.lng,
@@ -249,9 +258,8 @@ export default function Dashboard() {
         createdAt: serverTimestamp(),
       });
 
-      toast.success("Lost item reported successfully!");
+      toast.success("Lost item reported successfully!", { id: toastId });
 
-      // 3️⃣ Reset form
       setLostFormData({
         image: null,
         name: "",
@@ -263,9 +271,7 @@ export default function Dashboard() {
       setActiveView("dashboard");
     } catch (error) {
       console.error("Lost item submit error:", error);
-      toast.error("Failed to report lost item");
-    } finally {
-      toast.dismiss();
+      toast.error("Failed to report lost item", { id: toastId });
     }
   };
 
@@ -282,17 +288,17 @@ export default function Dashboard() {
       return;
     }
 
+    const toastId = toast.loading("Uploading found item...");
     try {
-      toast.loading("Uploading found item...");
       const uploadRes = await uploadToCloudinary(foundFormData.image);
-      const photoUrl = uploadRes.secure_url;
+      const image = uploadRes.secure_url;
       await addDoc(collection(db, "found_items"), {
         userId: user.uid,
         name: foundFormData.name,
         rawDescription: foundFormData.raw_description,
         semanticDescription: "", 
         category: foundFormData.category,
-        photoUrl,
+        image: image,
         // location: {
         //   lat: foundFormData.location.lat,
         //   lng: foundFormData.location.lng,
@@ -303,7 +309,7 @@ export default function Dashboard() {
         createdAt: serverTimestamp(),
       });
 
-      toast.success("Found item reported successfully!");
+      toast.success("Found item reported successfully!",{ id: toastId });
 
       setFoundFormData({
         image: null,
@@ -316,9 +322,7 @@ export default function Dashboard() {
       setActiveView("dashboard");
     } catch (error) {
       console.error("Found item submit error:", error);
-      toast.error("Failed to report found item");
-    } finally {
-      toast.dismiss();
+      toast.error("Failed to report found item", { id: toastId });
     }
   };
 
@@ -545,7 +549,9 @@ export default function Dashboard() {
             </nav>
 
             <div className="absolute bottom-8 left-8 right-8 border-t border-slate-700/50 pt-8">
-              <button className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-semibold rounded-lg transition-all duration-300 shadow-lg shadow-blue-500/20">
+              <button className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-semibold rounded-lg transition-all duration-300 shadow-lg shadow-blue-500/20"
+              onClick={logoutUser}
+              >
                 Sign Out
               </button>
             </div>
