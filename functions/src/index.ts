@@ -3,6 +3,7 @@ import { onDocumentCreated } from "firebase-functions/v2/firestore";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { upsertEmbedding } from "./vertex";
 import { runSimilarityCheck } from "./matcher";
+import { analyzeItemImage } from "./imageAI";
 
 admin.initializeApp();
 
@@ -66,9 +67,23 @@ export const onLostItemCreate = onDocumentCreated(
         const data = snap.data();
         if (!data || data.embeddingId) return;
 
+        let imageDescription = "";
+
+        if (data.imageUrl) {
+            imageDescription = await analyzeItemImage(data.imageUrl);
+        }
+
+        const combinedDescription = `
+        User Description:
+        ${data.rawDescription}
+
+        Image Analysis:
+        ${imageDescription}
+        `;
+
         const semanticDescription = await generateSemanticDescription(
             data.name,
-            data.rawDescription,
+            combinedDescription,
             data.category,
             data.location 
         );
@@ -111,9 +126,23 @@ export const onFoundItemCreate = onDocumentCreated(
         const data = snap.data();
         if (!data || data.embeddingId) return;
 
+        let imageDescription = "";
+
+        if (data.imageUrl) {
+            imageDescription = await analyzeItemImage(data.imageUrl);
+        }
+
+        const combinedDescription = `
+        User Description:
+        ${data.rawDescription}
+
+        Image Analysis:
+        ${imageDescription}
+        `;
+
         const semanticDescription = await generateSemanticDescription(
             data.name,
-            data.rawDescription,
+            combinedDescription,
             data.category,
             data.location
         );
