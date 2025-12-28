@@ -97,6 +97,22 @@ export default function Dashboard() {
     }
   }, [activeView]);
 
+  useEffect(() => {
+    if (!user || activeView !== "dashboard") return;
+
+    const loadData = async () => {
+      const [lost, found] = await Promise.all([
+        fetchUserLostItems(user.uid),
+        fetchUserFoundItems(user.uid),
+      ]);
+
+      setLostItems(lost as LostItem[]);
+      setFoundItems(found as FoundItem[]);
+    };
+
+    loadData();
+  }, [activeView, user]);
+
 
   const logoutUser = async () => {
     try {
@@ -834,14 +850,22 @@ export default function Dashboard() {
 
                     <div>
                       <label className="block text-sm font-semibold text-gray-300 mb-2">Location</label>
-                      <input
-                        type="text"
+                      <select
                         required
                         value={lostFormData.location}
                         onChange={(e) => setLostFormData({ ...lostFormData, location: e.target.value })}
-                        placeholder="e.g., Coach, Apple, etc."
-                        className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all"
-                      />
+                        className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all"
+                      >
+                        <option value="" disabled>Select a location</option>
+                        {Object.keys(NITK_LOCATIONS).map((locationKey) => (
+                          <option key={locationKey} value={locationKey} className="bg-slate-800">
+                            {locationKey}
+                          </option>
+                        ))}
+                        <option value="Not sure" className="bg-slate-800">
+                          Not sure
+                        </option>
+                      </select>
                     </div>
 
                     <button
@@ -955,14 +979,22 @@ export default function Dashboard() {
 
                     <div>
                       <label className="block text-sm font-semibold text-gray-300 mb-2">Location</label>
-                      <input
-                        type="text"
+                      <select
                         required
                         value={foundFormData.location}
                         onChange={(e) => setFoundFormData({ ...foundFormData, location: e.target.value })}
-                        placeholder="e.g., Apple, Samsung, etc."
-                        className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-green-500/50 focus:ring-1 focus:ring-green-500/20 transition-all"
-                      />
+                        className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-green-500/50 focus:ring-1 focus:ring-green-500/20 transition-all"
+                      >
+                        <option value="" disabled>Select a location</option>
+                        {Object.keys(NITK_LOCATIONS).map((locationKey) => (
+                          <option key={locationKey} value={locationKey} className="bg-slate-800">
+                            {locationKey}
+                          </option>
+                        ))}
+                        <option value="Not sure" className="bg-slate-800">
+                          Not sure
+                        </option>
+                      </select>
                     </div>
 
                     <button
