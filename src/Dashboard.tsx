@@ -31,19 +31,27 @@ interface FoundItem {
   status: 'returned' | 'not-returned';
 }
 
-interface MatchedItem {
+export interface MatchedItem {
   id: string;
-  image: string;
   name: string;
-  raw_description: string;
+  image: string;
   location: string;
   category: string;
-
-  date: string;
+  rawDescription: string;
   matchPercentage: number;
+  matchStatus: "pending" | "confirmed" | "rejected";
+  matchedType: "lost" | "found";
+  ownerUserId: string;
+  ownerUserEmail?: string;
+  ownerUserPhone?: string;
+  ownerUserName?: string;
+  reportedDate: string;
 }
 
+
 export default function Dashboard() {
+  const [matchedLostItems, setMatchedLostItems] = useState<MatchedItem[]>([]);
+  const [matchedFoundItems, setMatchedFoundItems] = useState<MatchedItem[]>([]);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [activeView, setActiveView] = useState<'home' | 'lost' | 'found' | 'dashboard' | 'heatmap'>('home');
   const {user} = useAuth();
@@ -159,6 +167,11 @@ export default function Dashboard() {
     return true;
   };
 
+  async function fetchUser(userId: string) {
+    const snap = await getDoc(doc(db, "users", userId));
+    return snap.exists() ? snap.data() : null;
+  }
+
   const logoutUser = async () => {
     try {
       await signOut(auth);
@@ -207,6 +220,96 @@ export default function Dashboard() {
     setIsEditingPhone(false);
   };
 
+  useEffect(() => {
+    if (!selectedLostItem) return;
+
+    fetchMatchedFoundItems(selectedLostItem.id)
+      .then(setMatchedFoundItems);
+
+  }, [selectedLostItem]);
+
+  useEffect(() => {
+    if (!selectedFoundItem) return;
+
+    fetchMatchedLostItems(selectedFoundItem.id)
+      .then(setMatchedLostItems);
+
+  }, [selectedFoundItem]);
+
+
+
+  async function fetchMatchedFoundItems(lostItemId: string): Promise<MatchedItem[]> {
+    const lostRef = doc(db, "lost_items", lostItemId);
+    const lostSnap = await getDoc(lostRef);
+
+    if (!lostSnap.exists()) return [];
+
+    const matches = lostSnap.data().matches || [];
+
+    const resolved = await Promise.all(
+      matches.map(async (m: any) => {
+        const foundSnap = await getDoc(doc(db, "found_items", m.itemId));
+        if (!foundSnap.exists()) return null;
+
+        const data = foundSnap.data();
+        const user = await fetchUser(m.userId);
+        return {
+          id: foundSnap.id,
+          image: data.image,
+          name: data.name,
+          raw_description: data.rawDescription,
+          location: data.location,
+          category: data.category,
+          date: data.createdAt?.toDate().toISOString().split("T")[0],
+          matchPercentage: Math.round(m.score * 100),
+          ownerUserId: m.userId,
+          ownerUserEmail: user?.email || '',
+          ownerUserPhone: user?.phoneNumber || '',
+          ownerUserName: user?.name || '',
+        };
+      })
+    );
+
+    return resolved.filter(Boolean) as MatchedItem[];
+  }
+
+  async function fetchMatchedLostItems(foundItemId: string): Promise<MatchedItem[]> {
+    const foundRef = doc(db, "found_items", foundItemId);
+    const foundSnap = await getDoc(foundRef);
+
+    if (!foundSnap.exists()) return [];
+
+    const matches = foundSnap.data().matches || [];
+
+    const resolved = await Promise.all(
+      matches.map(async (m: any) => {
+        const lostSnap = await getDoc(doc(db, "lost_items", m.itemId));
+        if (!lostSnap.exists()) return null;
+
+        const data = lostSnap.data();
+        const user = await fetchUser(m.userId);
+        return {
+          id: lostSnap.id,
+          image: data.image,
+          name: data.name,
+          raw_description: data.rawDescription,
+          location: data.location,
+          category: data.category,
+          date: data.createdAt?.toDate().toISOString().split("T")[0],
+          matchPercentage: Math.round(m.score * 100),
+          ownerUserId: m.userId,
+          ownerUserEmail: user?.email || '',
+          ownerUserPhone: user?.phoneNumber || '',
+          ownerUserName: user?.name || '',
+        };
+      })
+    );
+
+    return resolved.filter(Boolean) as MatchedItem[];
+  }
+
+
+
   async function getHeatmapData() {
     const snapshot = await getDocs(collection(db, "lost_items"));
 
@@ -226,76 +329,6 @@ export default function Dashboard() {
 
   const [lostCarouselIndex, setLostCarouselIndex] = useState(0);
   const [foundCarouselIndex, setFoundCarouselIndex] = useState(0);
-
-  const getMatchedFoundItems = (lostItem: LostItem): MatchedItem[] => {
-    return [
-      {
-        id: '1',
-        image: 'https://via.placeholder.com/200?text=Match+1',
-        name: 'Similar Item Found',
-        location: lostItem.location,
-        category: lostItem.category,
-        raw_description: lostItem.raw_description,
-        date: '2025-12-19',
-        matchPercentage: 92,
-      },
-      {
-        id: '2',
-        image: 'https://via.placeholder.com/200?text=Match+2',
-        name: 'Possible Match',
-        location: lostItem.location,
-        category: lostItem.category,
-        raw_description: lostItem.raw_description,
-        date: '2025-12-18',
-        matchPercentage: 78,
-      },
-      {
-        id: '3',
-        image: 'https://via.placeholder.com/200?text=Match+3',
-        name: 'Related Item',
-        location: lostItem.location,
-        category: lostItem.category,
-        raw_description: lostItem.raw_description,
-        date: '2025-12-17',
-        matchPercentage: 65,
-      },
-    ];
-  };
-
-  const getMatchedLostItems = (foundItem: FoundItem): MatchedItem[] => {
-    return [
-      {
-        id: '1',
-        image: 'https://via.placeholder.com/200?text=Lost+Match+1',
-        name: 'Similar Lost Item',
-        location: foundItem.location,
-        category: foundItem.category,
-        raw_description: foundItem.raw_description,
-        date: '2025-12-20',
-        matchPercentage: 88,
-      },
-      {
-        id: '2',
-        image: 'https://via.placeholder.com/200?text=Lost+Match+2',
-        name: 'Possible Lost Match',
-        location: foundItem.location,
-        category: foundItem.category,
-        raw_description: foundItem.raw_description,
-        date: '2025-12-19',
-        matchPercentage: 75,
-      },
-      {
-        id: '3',
-        image: 'https://via.placeholder.com/200?text=Lost+Match+3',
-        name: 'Related Lost Item',
-        location: foundItem.location  ,
-        category: foundItem.category,
-        raw_description: foundItem.raw_description,
-        date: '2025-12-18',
-        matchPercentage: 62,
-      },
-    ];
-  };
 
   const menuItems = [
     { icon: Package, label: 'Home', id: 'home' },
@@ -484,6 +517,24 @@ export default function Dashboard() {
     setFoundCarouselIndex(Math.min(foundItems.length - 1, foundCarouselIndex + 1));
   };
 
+  const markAsReturned = async (
+    sourceItemId: string,
+    matchedItemId: string,
+    isLostItemMode: boolean
+  ) => {
+    const sourceType = isLostItemMode ? "lost_items" : "found_items";
+    const targetType = isLostItemMode ? "found_items" : "lost_items"
+    await updateDoc(doc(db, sourceType, sourceItemId), {
+      status: "resolved",
+    });
+    await updateDoc(doc(db, targetType, matchedItemId), {
+      status: "resolved",
+    });
+
+    toast.success("Item marked as returned ");
+  };
+
+
   const MatchedItemsModal = ({ 
     isOpen, 
     onClose, 
@@ -569,6 +620,31 @@ export default function Dashboard() {
                             <div>
                               <h3 className="text-xl font-bold text-white mb-1">{item.name}</h3>
                               <p className="text-gray-400">{item.location}</p>
+                              <div>
+                              <h3 className="text-xl font-bold text-white mb-1">{item.name}</h3>
+                              <p className="text-gray-400">{item.location}</p>
+
+                              {item.ownerUserName && (
+                                <p className="text-sm text-gray-500 mt-1">
+                                  {isLostItemMode ? "Found by" : "Reported by"}{" "}
+                                  <span className="text-gray-300 font-medium">
+                                    {item.ownerUserName}
+                                  </span>
+                                </p>
+                              )}
+
+                              {item.ownerUserEmail && item.matchStatus === "confirmed" && (
+                                <p className="text-xs text-blue-400 mt-1">
+                                  Contact: {item.ownerUserEmail}
+                                </p>
+                              )}
+                              {item.ownerUserPhone && item.matchStatus === "confirmed" && (
+                                <p className="text-xs text-green-400 mt-1">
+                                  Phone: {item.ownerUserPhone}
+                                </p>
+                              )}
+                            </div>
+
                             </div>
                             <div className="flex flex-col items-center">
                               <div className="relative w-24 h-24 flex items-center justify-center">
@@ -603,18 +679,37 @@ export default function Dashboard() {
                             </div>
                           </div>
                           <p className="text-sm text-gray-400 mt-4">
-                            {isLostItemMode ? 'Found' : 'Reported'}: {item.date}
+                            {isLostItemMode ? 'Found' : 'Reported'}: {item.reportedDate}
                           </p>
                         </div>
 
                         <div className="flex gap-3 mt-6">
-                          <button className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-500/20 to-indigo-500/20 border border-blue-500/50 rounded-lg text-blue-300 hover:from-blue-500/30 hover:to-indigo-500/30 transition-all font-medium">
-                            View Details
+                        <button
+                          className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-500/20 to-indigo-500/20 border border-blue-500/50 rounded-lg text-blue-300 hover:from-blue-500/30 hover:to-indigo-500/30 transition-all font-medium"
+                        >
+                          View Details
+                        </button>
+
+                        {item.matchStatus !== "confirmed" ? (
+                          <button
+                            onClick={() =>
+                              markAsReturned(
+                                sourceItem.id,
+                                item.id,
+                                isLostItemMode
+                              )
+                            }
+                            className="flex-1 px-4 py-3 bg-gradient-to-r from-green-500/30 to-emerald-500/30 border border-green-500/60 rounded-lg text-green-300 hover:from-green-500/40 hover:to-emerald-500/40 transition-all font-semibold"
+                          >
+                            Mark as Returned
                           </button>
-                          <button className="flex-1 px-4 py-3 bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/50 rounded-lg text-green-300 hover:from-green-500/30 hover:to-emerald-500/30 transition-all font-medium">
-                            Contact Owner
-                          </button>
-                        </div>
+                        ) : (
+                          <div className="flex-1 px-4 py-3 bg-green-500/10 border border-green-500/30 rounded-lg text-green-400 font-semibold text-center">
+                            ✔ Returned
+                          </div>
+                        )}
+                      </div>
+
                       </div>
                     </div>
                   </div>
@@ -1458,7 +1553,6 @@ export default function Dashboard() {
                           </button>
                         </div>
 
-                        {/* Carousel Indicators */}
                         <div className="flex justify-center gap-2 mt-6">
                           {foundItems.map((_, index) => (
                             <button
@@ -1487,7 +1581,7 @@ export default function Dashboard() {
         isOpen={!!selectedLostItem}
         onClose={() => setSelectedLostItem(null)}
         sourceItem={selectedLostItem}
-        matchedItems={selectedLostItem ? getMatchedFoundItems(selectedLostItem) : []}
+        matchedItems={matchedFoundItems}
         isLostItemMode={true}
       />
 
@@ -1495,7 +1589,7 @@ export default function Dashboard() {
         isOpen={!!selectedFoundItem}
         onClose={() => setSelectedFoundItem(null)}
         sourceItem={selectedFoundItem}
-        matchedItems={selectedFoundItem ? getMatchedLostItems(selectedFoundItem) : []}
+        matchedItems={matchedLostItems}
         isLostItemMode={false}
       />
     </div>
