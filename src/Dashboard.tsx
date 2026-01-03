@@ -773,10 +773,10 @@ export default function Dashboard() {
 
       <div className="flex pt-20">
         {sidebarOpen && (
-          <div className="fixed left-0 top-20 h-[calc(100vh-80px)] w-80 bg-gradient-to-b from-slate-900/95 to-slate-950/95 border-r border-slate-700/50 backdrop-blur-sm px-8 py-8 flex flex-col">
+          <div className="fixed left-0 top-20 h-[calc(100vh-80px)] w-80 bg-gradient-to-b from-slate-900/95 to-slate-950/95 border-r border-slate-700/50 backdrop-blur-sm px-6 py-6 flex flex-col">
             
             {userProfile && (
-              <div className="mb-8 pb-6 border-b border-slate-700/50">
+              <div className="mb-6 pb-5 border-b border-slate-700/50">
                 <div className="flex items-center gap-4 mb-4">
                   <div className="w-16 h-16 rounded-full overflow-hidden bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
                     {userProfile.image ? (
@@ -799,59 +799,73 @@ export default function Dashboard() {
                   </div>
                 </div>
                 
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-400">Phone Number</span>
-                    {!isEditingPhone && (
-                      <button
-                        onClick={handlePhoneEdit}
-                        className="p-1.5 hover:bg-slate-700/50 rounded-lg transition-colors text-gray-400 hover:text-blue-400"
-                        title="Edit phone number"
-                      >
-                        <Edit3 className="w-4 h-4" />
-                      </button>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-400 mb-3">Phone Number</label>
+                    
+                    {isEditingPhone ? (
+                      <div className="space-y-3">
+                        <input
+                          type="tel"
+                          value={phoneNumber}
+                          onChange={(e) => setPhoneNumber(e.target.value)}
+                          placeholder="Enter 10-digit phone number"
+                          className="w-full px-4 py-3 bg-slate-800/50 border border-slate-600 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                          autoFocus
+                        />
+                        <div className="flex gap-2">
+                          <button
+                            onClick={handlePhoneSave}
+                            className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
+                          >
+                            <Check className="w-4 h-4" />
+                            Save
+                          </button>
+                          <button
+                            onClick={handlePhoneCancel}
+                            className="flex-1 px-4 py-2 bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
+                          >
+                            <X className="w-4 h-4" />
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="relative group">
+                        <div className="flex items-center justify-between p-4 bg-slate-800/30 border border-slate-700/50 rounded-lg hover:border-slate-600/50 transition-colors">
+                          <div className="flex items-center gap-3">
+                            <div className="w-2 h-2 bg-green-400 rounded-full opacity-70"></div>
+                            <span className="text-white font-medium">
+                              {userProfile.phoneNumber ? (
+                                userProfile.phoneNumber
+                              ) : (
+                                <span className="text-slate-500">No phone number added</span>
+                              )}
+                            </span>
+                          </div>
+                          <button
+                            onClick={handlePhoneEdit}
+                            className="p-2 hover:bg-slate-700/50 rounded-lg transition-colors text-slate-400 hover:text-blue-400 opacity-0 group-hover:opacity-100"
+                            title="Edit phone number"
+                          >
+                            <Edit3 className="w-4 h-4" />
+                          </button>
+                        </div>
+                        
+                        {!userProfile.phoneNumber && (
+                          <div className="mt-2 text-xs text-slate-500">
+                            Required to report lost or found items
+                          </div>
+                        )}
+                      </div>
                     )}
                   </div>
-                  
-                  {isEditingPhone ? (
-                    <div className="space-y-2">
-                      <input
-                        type="tel"
-                        value={phoneNumber}
-                        onChange={(e) => setPhoneNumber(e.target.value)}
-                        placeholder="Enter phone number"
-                        className="w-full px-3 py-2 bg-slate-800/50 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all"
-                        autoFocus
-                      />
-                      <div className="flex gap-2">
-                        <button
-                          onClick={handlePhoneSave}
-                          className="flex-1 px-3 py-1.5 bg-blue-500/20 border border-blue-500/50 text-blue-400 rounded-lg text-sm hover:bg-blue-500/30 transition-colors"
-                        >
-                          Save
-                        </button>
-                        <button
-                          onClick={handlePhoneCancel}
-                          className="flex-1 px-3 py-1.5 bg-slate-700/50 border border-slate-600 text-gray-300 rounded-lg text-sm hover:bg-slate-700 transition-colors"
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="px-3 py-2 bg-slate-800/30 border border-slate-700/50 rounded-lg">
-                      <p className="text-white text-sm">
-                        {userProfile.phoneNumber || (
-                          <span className="text-gray-500 italic">No phone number added</span>
-                        )}
-                      </p>
-                    </div>
-                  )}
                 </div>
               </div>
             )}
 
-            <nav className="space-y-3 flex-1">
+            <nav className="space-y-2 flex-1">
+              <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4 px-2">Navigation</div>
               {menuItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = activeView === item.id;
@@ -865,14 +879,15 @@ export default function Dashboard() {
                   <button
                     key={item.id}
                     onClick={handleNavClick}
-                    className={`w-full flex items-center gap-4 px-6 py-3 rounded-lg transition-all duration-300 group border ${
+                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-300 group relative ${
                       isActive
-                        ? 'bg-gradient-to-r from-blue-500/20 to-indigo-500/20 text-white border-blue-500/50'
-                        : 'text-gray-300 hover:text-white hover:bg-gradient-to-r hover:from-blue-500/10 hover:to-indigo-500/10 border-transparent hover:border-blue-500/30'
+                        ? 'bg-slate-800 text-white border border-slate-700 shadow-lg'
+                        : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 border border-transparent hover:border-slate-700/50'
                     }`}
                   >
-                    <Icon className={`w-5 h-5 transition-colors flex-shrink-0 ${isActive ? 'text-blue-400' : 'text-blue-400 group-hover:text-blue-300'}`} />
-                    <span className="text-base font-medium group-hover:font-semibold transition-all">
+                    {isActive && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-blue-500 rounded-r-lg"></div>}
+                    <Icon className={`w-5 h-5 transition-colors flex-shrink-0 ${isActive ? 'text-blue-400' : 'text-slate-500 group-hover:text-slate-300'}`} />
+                    <span className="text-base font-medium transition-all">
                       {item.label}
                     </span>
                   </button>
@@ -883,7 +898,7 @@ export default function Dashboard() {
             <div className="pt-6 border-t border-slate-700/50">
               <button 
                 onClick={logoutUser}
-                className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-gradient-to-r from-red-500/20 to-red-600/20 hover:from-red-500/30 hover:to-red-600/30 border border-red-500/50 hover:border-red-400/50 text-red-400 hover:text-red-300 font-semibold rounded-lg transition-all duration-300 group"
+                className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-slate-800 hover:bg-slate-700 border border-slate-600 hover:border-slate-500 text-slate-300 hover:text-slate-200 font-medium rounded-lg transition-all duration-300 group"
               >
                 <LogOut className="w-5 h-5 transition-transform group-hover:translate-x-1" />
                 <span>Sign Out</span>
@@ -897,8 +912,8 @@ export default function Dashboard() {
             {activeView === 'home' && (
               <div className="w-full h-full">
                 <div className="bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 min-h-[calc(100vh-80px)] overflow-hidden">
-                  <div className="grid grid-cols-2 gap-8 p-12 items-center">
-                    <div className="space-y-8">
+                  <div className="grid grid-cols-2 gap-12 p-12 items-center min-h-[600px]">
+                    <div className="space-y-10">
                       <div>
                         <h1 className="text-5xl font-bold text-white mb-4 leading-tight">
                           Welcome Back!
@@ -909,53 +924,68 @@ export default function Dashboard() {
                       </div>
 
                       <div className="grid grid-cols-2 gap-4">
-                        <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4 hover:bg-blue-500/15 transition-all">
-                          <p className="text-blue-400 text-sm font-semibold mb-1">Lost Items</p>
-                          <p className="text-2xl font-bold text-white">{lostItems.length}</p>
+                        <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-5 hover:bg-slate-800/70 transition-all group">
+                          <div className="flex items-center justify-between mb-2">
+                            <p className="text-slate-400 text-sm font-medium">Lost Items</p>
+                            <div className="w-2 h-2 bg-red-400 rounded-full opacity-70"></div>
+                          </div>
+                          <p className="text-3xl font-bold text-white group-hover:text-red-400 transition-colors">{lostItems.length}</p>
                         </div>
-                        <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-4 hover:bg-green-500/15 transition-all">
-                          <p className="text-green-400 text-sm font-semibold mb-1">Found Items</p>
-                          <p className="text-2xl font-bold text-white">{foundItems.length}</p>
+                        <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-5 hover:bg-slate-800/70 transition-all group">
+                          <div className="flex items-center justify-between mb-2">
+                            <p className="text-slate-400 text-sm font-medium">Found Items</p>
+                            <div className="w-2 h-2 bg-green-400 rounded-full opacity-70"></div>
+                          </div>
+                          <p className="text-3xl font-bold text-white group-hover:text-green-400 transition-colors">{foundItems.length}</p>
                         </div>
-                        <div className="bg-purple-500/10 border border-purple-500/30 rounded-lg p-4 hover:bg-purple-500/15 transition-all">
-                          <p className="text-purple-400 text-sm font-semibold mb-1">Resolved</p>
-                          <p className="text-2xl font-bold text-white">{lostItems.filter(i => i.status === 'resolved').length}</p>
+                        <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-5 hover:bg-slate-800/70 transition-all group">
+                          <div className="flex items-center justify-between mb-2">
+                            <p className="text-slate-400 text-sm font-medium">Resolved</p>
+                            <div className="w-2 h-2 bg-blue-400 rounded-full opacity-70"></div>
+                          </div>
+                          <p className="text-3xl font-bold text-white group-hover:text-blue-400 transition-colors">{lostItems.filter(i => i.status === 'resolved').length}</p>
                         </div>
-                        <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4 hover:bg-amber-500/15 transition-all">
-                          <p className="text-amber-400 text-sm font-semibold mb-1">Active</p>
-                          <p className="text-2xl font-bold text-white">{foundItems.filter(i => i.status !== 'resolved' && i.status !== 'returned').length}</p>
+                        <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-5 hover:bg-slate-800/70 transition-all group">
+                          <div className="flex items-center justify-between mb-2">
+                            <p className="text-slate-400 text-sm font-medium">Active</p>
+                            <div className="w-2 h-2 bg-yellow-400 rounded-full opacity-70 animate-pulse"></div>
+                          </div>
+                          <p className="text-3xl font-bold text-white group-hover:text-yellow-400 transition-colors">{foundItems.filter(i => i.status !== 'resolved' && i.status !== 'returned').length}</p>
                         </div>
                       </div>
 
-                      <div className="space-y-3">
-                        <p className="text-sm font-semibold text-gray-400 uppercase tracking-wide">Quick Actions</p>
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-2">
+                          <div className="w-6 h-0.5 bg-gradient-to-r from-blue-500 to-transparent"></div>
+                          <p className="text-sm font-bold text-slate-300 uppercase tracking-wide">Quick Actions</p>
+                        </div>
                         <div className="space-y-2">
                           <button
                             onClick={() => {
                               if (!checkPhoneNumber()) return;
                               setActiveView('lost');
                             }}
-                            className="w-full px-4 py-3 bg-gradient-to-r from-blue-500/20 to-indigo-500/20 border border-blue-500/50 rounded-lg text-blue-300 hover:from-blue-500/30 hover:to-indigo-500/30 hover:border-blue-400/50 transition-all font-medium text-left flex items-center justify-between group"
+                            className="w-full px-4 py-3 bg-slate-800 hover:bg-slate-700 border border-slate-600 hover:border-slate-500 rounded-lg text-slate-200 transition-all font-medium text-left flex items-center justify-between group"
                           >
                             <span>Report Lost Item</span>
-                            <span className="group-hover:translate-x-1 transition-transform">→</span>
+                            <span className="group-hover:translate-x-1 transition-transform text-slate-400">→</span>
                           </button>
                           <button
                             onClick={() => {
                               if (!checkPhoneNumber()) return;
                               setActiveView('found');
                             }}
-                            className="w-full px-4 py-3 bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/50 rounded-lg text-green-300 hover:from-green-500/30 hover:to-emerald-500/30 hover:border-green-400/50 transition-all font-medium text-left flex items-center justify-between group"
+                            className="w-full px-4 py-3 bg-slate-800 hover:bg-slate-700 border border-slate-600 hover:border-slate-500 rounded-lg text-slate-200 transition-all font-medium text-left flex items-center justify-between group"
                           >
                             <span>Report Found Item</span>
                             <span className="group-hover:translate-x-1 transition-transform">→</span>
                           </button>
                           <button
                             onClick={() => setActiveView('dashboard')}
-                            className="w-full px-4 py-3 bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-500/50 rounded-lg text-purple-300 hover:from-purple-500/30 hover:to-pink-500/30 hover:border-purple-400/50 transition-all font-medium text-left flex items-center justify-between group"
+                            className="w-full px-4 py-3 bg-slate-800 hover:bg-slate-700 border border-slate-600 hover:border-slate-500 rounded-lg text-slate-200 transition-all font-medium text-left flex items-center justify-between group"
                           >
                             <span>Go to Dashboard</span>
-                            <span className="group-hover:translate-x-1 transition-transform">→</span>
+                            <span className="group-hover:translate-x-1 transition-transform text-slate-400">→</span>
                           </button>
                         </div>
                       </div>
@@ -1085,259 +1115,411 @@ export default function Dashboard() {
             )}
 
             {activeView === 'lost' && (
-              <div className="p-12">
-                <div className="grid grid-cols-2 gap-12 max-w-7xl">
-                <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 rounded-xl border border-slate-700/50 p-10 backdrop-blur-sm h-fit">
-                  <h2 className="text-3xl font-bold text-white mb-8">Report Lost Item</h2>
-                  <form onSubmit={handleLostSubmit} className="space-y-6">
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-300 mb-3">Item Image</label>
-                      <label className="flex items-center justify-center w-full px-6 py-8 border-2 border-dashed border-blue-500/50 rounded-lg cursor-pointer hover:border-blue-400 transition-colors bg-blue-500/5">
-                        <div className="flex flex-col items-center justify-center">
-                          <Upload className="w-8 h-8 text-blue-400 mb-2" />
-                          <span className="text-sm text-gray-300">Click to upload image</span>
-                          <input
-                            type="file"
-                            accept="image/*"
-                            onChange={handleLostImageChange}
-                            className="hidden"
-                          />
+              <div className="p-8">
+                <div className="max-w-7xl mx-auto">
+                  <div className="mb-8">
+                    <div className="flex items-center gap-2 text-sm text-slate-500 mb-4">
+                      <button onClick={() => setActiveView('home')} className="hover:text-slate-300 transition-colors">Dashboard</button>
+                      <span>/</span>
+                      <span className="text-slate-300">Report Lost Item</span>
+                    </div>
+                    <h1 className="text-4xl font-bold text-white mb-4">Report a Lost Item</h1>
+                    <p className="text-slate-400 text-lg">Provide details about your lost item and we'll help you find it using AI-powered matching.</p>
+                  </div>
+                  
+                  <div className="grid grid-cols-3 gap-8">
+                    <div className="col-span-2">
+                      <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 rounded-xl border border-slate-700/50 p-8 backdrop-blur-sm">
+                        <div className="flex items-center gap-4 mb-8">
+                          <div className="bg-blue-500/20 p-2 rounded-lg">
+                            <Search className="w-6 h-6 text-blue-400" />
+                          </div>
+                          <div>
+                            <h2 className="text-xl font-bold text-white">Item Details</h2>
+                            <p className="text-slate-400 text-sm">The more details you provide, the better we can match your item</p>
+                          </div>
                         </div>
-                      </label>
-                      {lostFormData.image && (
-                        <p className="text-sm text-green-400 mt-2">✓ {lostFormData.image.name}</p>
-                      )}
-                    </div>
+                        <form onSubmit={handleLostSubmit} className="space-y-6">
+                          <div className="grid grid-cols-2 gap-6">
+                            <div className="col-span-2">
+                              <label className="block text-sm font-semibold text-slate-300 mb-3">Item Image *</label>
+                              <label className="flex items-center justify-center w-full px-6 py-12 border-2 border-dashed border-blue-500/50 rounded-lg cursor-pointer hover:border-blue-400 transition-colors bg-blue-500/5 group">
+                                <div className="flex flex-col items-center justify-center">
+                                  <Upload className="w-10 h-10 text-blue-400 mb-3 group-hover:scale-110 transition-transform" />
+                                  <span className="text-base font-medium text-slate-300 mb-1">Click to upload image</span>
+                                  <span className="text-sm text-slate-500">PNG, JPG up to 10MB</span>
+                                  <input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={handleLostImageChange}
+                                    className="hidden"
+                                  />
+                                </div>
+                              </label>
+                              {lostFormData.image && (
+                                <div className="flex items-center gap-2 mt-3 p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
+                                  <Check className="w-4 h-4 text-green-400" />
+                                  <span className="text-sm text-green-400 font-medium">{lostFormData.image.name}</span>
+                                </div>
+                              )}
+                            </div>
 
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-300 mb-2">Name of Item</label>
-                      <input
-                        type="text"
-                        required
-                        value={lostFormData.name}
-                        onChange={(e) => setLostFormData({ ...lostFormData, name: e.target.value })}
-                        placeholder="e.g., Black Leather Wallet"
-                        className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all"
-                      />
-                    </div>
+                            <div>
+                              <label className="block text-sm font-semibold text-slate-300 mb-2">Item Name *</label>
+                              <input
+                                type="text"
+                                required
+                                value={lostFormData.name}
+                                onChange={(e) => setLostFormData({ ...lostFormData, name: e.target.value })}
+                                placeholder="e.g., Black Leather Wallet"
+                                className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                              />
+                            </div>
 
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-300 mb-2">Raw Description</label>
-                      <input
-                        type="text"
-                        required
-                        value={lostFormData.raw_description}
-                        onChange={(e) => setLostFormData({ ...lostFormData, raw_description: e.target.value })}
-                        placeholder="e.g., Coach, Apple, etc."
-                        className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all"
-                      />
-                    </div>
+                            <div>
+                              <label className="block text-sm font-semibold text-slate-300 mb-2">Category *</label>
+                              <input
+                                type="text"
+                                required
+                                value={lostFormData.category}
+                                onChange={(e) => setLostFormData({ ...lostFormData, category: e.target.value })}
+                                placeholder="e.g., Electronics, Accessories"
+                                className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                              />
+                            </div>
 
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-300 mb-2">Category</label>
-                      <input
-                        type="text"
-                        required
-                        value={lostFormData.category}
-                        onChange={(e) => setLostFormData({ ...lostFormData, category: e.target.value })}
-                        placeholder="e.g., Coach, Apple, etc."
-                        className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all"
-                      />
-                    </div>
+                            <div className="col-span-2">
+                              <label className="block text-sm font-semibold text-slate-300 mb-2">Description *</label>
+                              <textarea
+                                required
+                                value={lostFormData.raw_description}
+                                onChange={(e) => setLostFormData({ ...lostFormData, raw_description: e.target.value })}
+                                placeholder="Describe your item in detail - brand, color, size, distinctive features..."
+                                rows={4}
+                                className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 transition-all resize-none"
+                              />
+                            </div>
 
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-300 mb-2">Location</label>
-                      <select
-                        required
-                        value={lostFormData.location}
-                        onChange={(e) => setLostFormData({ ...lostFormData, location: e.target.value })}
-                        className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all"
-                      >
-                        <option value="" disabled>Select a location</option>
-                        {Object.keys(NITK_LOCATIONS).map((locationKey) => (
-                          <option key={locationKey} value={locationKey} className="bg-slate-800">
-                            {locationKey}
-                          </option>
-                        ))}
-                        <option value="Not sure" className="bg-slate-800">
-                          Not sure
-                        </option>
-                      </select>
-                    </div>
+                            <div className="col-span-2">
+                              <label className="block text-sm font-semibold text-slate-300 mb-2">Where did you lose it? *</label>
+                              <select
+                                required
+                                value={lostFormData.location}
+                                onChange={(e) => setLostFormData({ ...lostFormData, location: e.target.value })}
+                                className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                              >
+                                <option value="" disabled className="bg-slate-800">Select a location</option>
+                                {Object.keys(NITK_LOCATIONS).map((locationKey) => (
+                                  <option key={locationKey} value={locationKey} className="bg-slate-800">
+                                    {locationKey}
+                                  </option>
+                                ))}
+                                <option value="Not sure" className="bg-slate-800">
+                                  Not sure
+                                </option>
+                              </select>
+                            </div>
+                          </div>
 
-                    <button
-                      type="submit"
-                      className="w-full mt-8 px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-semibold rounded-lg transition-all duration-300 shadow-lg shadow-blue-500/20"
-                    >
-                      Submit
-                    </button>
-                  </form>
-                </div>
-
-                <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 rounded-xl border border-slate-700/50 p-10 backdrop-blur-sm h-fit flex flex-col items-center justify-center">
-                  <div className="w-full h-64 bg-slate-800 rounded-lg border border-slate-700 flex items-center justify-center mb-6">
-                    {lostFormData.image ? (
-                      <img
-                        src={URL.createObjectURL(lostFormData.image)}
-                        alt="Preview"
-                        className="w-full h-full object-cover rounded-lg"
-                      />
-                    ) : (
-                      <div className="text-center">
-                        <Upload className="w-12 h-12 text-gray-600 mx-auto mb-2" />
-                        <p className="text-gray-500">Upload image to preview</p>
+                          <div className="border-t border-slate-700/50 pt-6">
+                            <div className="space-y-3">
+                              <button
+                                type="submit"
+                                disabled={!lostFormData.image || !lostFormData.name || !lostFormData.category || !lostFormData.raw_description || !lostFormData.location}
+                                className="w-full px-6 py-4 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 disabled:from-slate-700 disabled:to-slate-700 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl flex items-center justify-center gap-3"
+                              >
+                                <Search className="w-5 h-5" />
+                                Submit Lost Item Report
+                              </button>
+                              <p className="text-xs text-slate-500 text-center">Our AI will start matching your item immediately after submission</p>
+                            </div>
+                          </div>
+                        </form>
                       </div>
-                    )}
-                  </div>
-                  <div className="w-full space-y-3">
-                    <div className="p-3 bg-slate-800/50 rounded-lg">
-                      <p className="text-xs text-gray-500">Item Name</p>
-                      <p className="text-white font-semibold">{lostFormData.name || 'Not provided'}</p>
                     </div>
-                    <div className="p-3 bg-slate-800/50 rounded-lg">
-                      <p className="text-xs text-gray-500">Raw Description</p>
-                      <p className="text-white font-semibold">{lostFormData.raw_description || 'Not provided'}</p>
+                    
+                    <div>
+                      <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 rounded-xl border border-slate-700/50 p-6 backdrop-blur-sm sticky top-8">
+                        <div className="flex items-center gap-3 mb-6">
+                          <div className="bg-blue-500/20 p-2 rounded-lg">
+                            <Package className="w-5 h-5 text-blue-400" />
+                          </div>
+                          <h3 className="text-lg font-bold text-white">Preview</h3>
+                        </div>
+                        
+                        <div className="mb-6">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-xs font-medium text-slate-400">COMPLETION</span>
+                            <span className="text-xs text-slate-400">
+                              {Math.round(([lostFormData.image, lostFormData.name, lostFormData.category, lostFormData.raw_description, lostFormData.location].filter(Boolean).length / 5) * 100)}%
+                            </span>
+                          </div>
+                          <div className="w-full bg-slate-800 rounded-full h-1.5">
+                            <div 
+                              className="bg-gradient-to-r from-blue-400 to-blue-500 h-1.5 rounded-full transition-all duration-500"
+                              style={{
+                                width: `${([lostFormData.image, lostFormData.name, lostFormData.category, lostFormData.raw_description, lostFormData.location].filter(Boolean).length / 5) * 100}%`
+                              }}
+                            ></div>
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-4">
+                          <div className="w-full h-48 bg-slate-800 rounded-lg border border-slate-700 flex items-center justify-center overflow-hidden">
+                            {lostFormData.image ? (
+                              <img
+                                src={URL.createObjectURL(lostFormData.image)}
+                                alt="Preview"
+                                className="w-full h-full object-cover rounded-lg"
+                              />
+                            ) : (
+                              <div className="text-center">
+                                <Upload className="w-8 h-8 text-slate-600 mx-auto mb-2" />
+                                <p className="text-slate-500 text-sm">Image preview</p>
+                              </div>
+                            )}
+                          </div>
+                          
+                          <div className="space-y-3">
+                            <div className="p-3 bg-slate-800/30 rounded-lg border border-slate-700/50 relative">
+                              <p className="text-xs text-slate-500 font-medium mb-1">ITEM NAME</p>
+                              <p className="text-white font-semibold">{lostFormData.name || 'Enter item name...'}</p>
+                              {lostFormData.name && <div className="absolute top-2 right-2 w-2 h-2 bg-green-400 rounded-full"></div>}
+                            </div>
+                            <div className="p-3 bg-slate-800/30 rounded-lg border border-slate-700/50 relative">
+                              <p className="text-xs text-slate-500 font-medium mb-1">CATEGORY</p>
+                              <p className="text-white font-semibold">{lostFormData.category || 'Enter category...'}</p>
+                              {lostFormData.category && <div className="absolute top-2 right-2 w-2 h-2 bg-green-400 rounded-full"></div>}
+                            </div>
+                            <div className="p-3 bg-slate-800/30 rounded-lg border border-slate-700/50 relative">
+                              <p className="text-xs text-slate-500 font-medium mb-1">LOCATION</p>
+                              <p className="text-white font-semibold">{lostFormData.location || 'Select location...'}</p>
+                              {lostFormData.location && <div className="absolute top-2 right-2 w-2 h-2 bg-green-400 rounded-full"></div>}
+                            </div>
+                            <div className="p-3 bg-slate-800/30 rounded-lg border border-slate-700/50 relative">
+                              <p className="text-xs text-slate-500 font-medium mb-1">DESCRIPTION</p>
+                              <p className="text-white text-sm leading-relaxed">{lostFormData.raw_description || 'Enter description...'}</p>
+                              {lostFormData.raw_description && <div className="absolute top-2 right-2 w-2 h-2 bg-green-400 rounded-full"></div>}
+                            </div>
+                          </div>
+                          
+                          <div className="border-t border-slate-700/50 pt-4">
+                            <div className="flex items-center gap-2 text-xs text-slate-500">
+                              <Clock className="w-3 h-3" />
+                              <span>AI matching will begin after submission</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      
                     </div>
-                    <div className="p-3 bg-slate-800/50 rounded-lg">
-                      <p className="text-xs text-gray-500">Location</p>
-                      <p className="text-white font-semibold">{lostFormData.location || 'Not provided'}</p>
-                    </div>
-                    <div className="p-3 bg-slate-800/50 rounded-lg">
-                      <p className="text-xs text-gray-500">Category</p>
-                      <p className="text-white font-semibold">{lostFormData.category || 'Not provided'}</p>
-                    </div>
-
                   </div>
                 </div>
-              </div>
               </div>
             )}
 
             {activeView === 'found' && (
-              <div className="p-12">
-                <div className="grid grid-cols-2 gap-12 max-w-7xl">
-                <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 rounded-xl border border-slate-700/50 p-10 backdrop-blur-sm h-fit">
-                  <h2 className="text-3xl font-bold text-white mb-8">Report Found Item</h2>
-                  <form onSubmit={handleFoundSubmit} className="space-y-6">
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-300 mb-3">Item Image</label>
-                      <label className="flex items-center justify-center w-full px-6 py-8 border-2 border-dashed border-green-500/50 rounded-lg cursor-pointer hover:border-green-400 transition-colors bg-green-500/5">
-                        <div className="flex flex-col items-center justify-center">
-                          <Upload className="w-8 h-8 text-green-400 mb-2" />
-                          <span className="text-sm text-gray-300">Click to upload image</span>
-                          <input
-                            type="file"
-                            accept="image/*"
-                            onChange={handleFoundImageChange}
-                            className="hidden"
-                          />
+              <div className="p-8">
+                <div className="max-w-7xl mx-auto">
+                  <div className="mb-8">
+                    <div className="flex items-center gap-2 text-sm text-slate-500 mb-4">
+                      <button onClick={() => setActiveView('home')} className="hover:text-slate-300 transition-colors">Dashboard</button>
+                      <span>/</span>
+                      <span className="text-slate-300">Report Found Item</span>
+                    </div>
+                    <h1 className="text-4xl font-bold text-white mb-4">Report a Found Item</h1>
+                    <p className="text-slate-400 text-lg">Help someone recover their lost belongings by reporting what you've found.</p>
+                  </div>
+                  
+                  <div className="grid grid-cols-3 gap-8">
+                    <div className="col-span-2">
+                      <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 rounded-xl border border-slate-700/50 p-8 backdrop-blur-sm">
+                        <div className="flex items-center gap-4 mb-8">
+                          <div className="bg-green-500/20 p-2 rounded-lg">
+                            <Package className="w-6 h-6 text-green-400" />
+                          </div>
+                          <div>
+                            <h2 className="text-xl font-bold text-white">Found Item Details</h2>
+                            <p className="text-slate-400 text-sm">Provide clear details to help us match this with someone's lost item</p>
+                          </div>
                         </div>
-                      </label>
-                      {foundFormData.image && (
-                        <p className="text-sm text-green-400 mt-2">✓ {foundFormData.image.name}</p>
-                      )}
-                    </div>
+                        
+                        <form onSubmit={handleFoundSubmit} className="space-y-6">
+                          <div className="grid grid-cols-2 gap-6">
+                            <div className="col-span-2">
+                              <label className="block text-sm font-semibold text-slate-300 mb-3">Item Image *</label>
+                              <label className="flex items-center justify-center w-full px-6 py-12 border-2 border-dashed border-green-500/50 rounded-lg cursor-pointer hover:border-green-400 transition-colors bg-green-500/5 group">
+                                <div className="flex flex-col items-center justify-center">
+                                  <Upload className="w-10 h-10 text-green-400 mb-3 group-hover:scale-110 transition-transform" />
+                                  <span className="text-base font-medium text-slate-300 mb-1">Click to upload image</span>
+                                  <span className="text-sm text-slate-500">PNG, JPG up to 10MB</span>
+                                  <input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={handleFoundImageChange}
+                                    className="hidden"
+                                  />
+                                </div>
+                              </label>
+                              {foundFormData.image && (
+                                <div className="flex items-center gap-2 mt-3 p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
+                                  <Check className="w-4 h-4 text-green-400" />
+                                  <span className="text-sm text-green-400 font-medium">{foundFormData.image.name}</span>
+                                </div>
+                              )}
+                            </div>
 
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-300 mb-2">Name of Item</label>
-                      <input
-                        type="text"
-                        required
-                        value={foundFormData.name}
-                        onChange={(e) => setFoundFormData({ ...foundFormData, name: e.target.value })}
-                        placeholder="e.g., iPhone 15 Pro"
-                        className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-green-500/50 focus:ring-1 focus:ring-green-500/20 transition-all"
-                      />
-                    </div>
+                            <div>
+                              <label className="block text-sm font-semibold text-slate-300 mb-2">Item Name *</label>
+                              <input
+                                type="text"
+                                required
+                                value={foundFormData.name}
+                                onChange={(e) => setFoundFormData({ ...foundFormData, name: e.target.value })}
+                                placeholder="e.g., iPhone 15 Pro"
+                                className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-green-500/50 focus:ring-2 focus:ring-green-500/20 transition-all"
+                              />
+                            </div>
 
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-300 mb-2">Raw description</label>
-                      <input
-                        type="text"
-                        required
-                        value={foundFormData.raw_description}
-                        onChange={(e) => setFoundFormData({ ...foundFormData, raw_description: e.target.value })}
-                        placeholder="e.g., Apple, Samsung, etc."
-                        className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-green-500/50 focus:ring-1 focus:ring-green-500/20 transition-all"
-                      />
-                    </div>
+                            <div>
+                              <label className="block text-sm font-semibold text-slate-300 mb-2">Category *</label>
+                              <input
+                                type="text"
+                                required
+                                value={foundFormData.category}
+                                onChange={(e) => setFoundFormData({ ...foundFormData, category: e.target.value })}
+                                placeholder="e.g., Electronics, Accessories"
+                                className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-green-500/50 focus:ring-2 focus:ring-green-500/20 transition-all"
+                              />
+                            </div>
 
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-300 mb-2">Category</label>
-                      <input
-                        type="text"
-                        required
-                        value={foundFormData.category}
-                        onChange={(e) => setFoundFormData({ ...foundFormData, category: e.target.value })}
-                        placeholder="e.g., Apple, Samsung, etc."
-                        className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-green-500/50 focus:ring-1 focus:ring-green-500/20 transition-all"
-                      />
-                    </div>
+                            <div className="col-span-2">
+                              <label className="block text-sm font-semibold text-slate-300 mb-2">Description *</label>
+                              <textarea
+                                required
+                                value={foundFormData.raw_description}
+                                onChange={(e) => setFoundFormData({ ...foundFormData, raw_description: e.target.value })}
+                                placeholder="Describe the item in detail - brand, color, size, condition..."
+                                rows={4}
+                                className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-green-500/50 focus:ring-2 focus:ring-green-500/20 transition-all resize-none"
+                              />
+                            </div>
 
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-300 mb-2">Location</label>
-                      <select
-                        required
-                        value={foundFormData.location}
-                        onChange={(e) => setFoundFormData({ ...foundFormData, location: e.target.value })}
-                        className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-green-500/50 focus:ring-1 focus:ring-green-500/20 transition-all"
-                      >
-                        <option value="" disabled>Select a location</option>
-                        {Object.keys(NITK_LOCATIONS).map((locationKey) => (
-                          <option key={locationKey} value={locationKey} className="bg-slate-800">
-                            {locationKey}
-                          </option>
-                        ))}
-                        <option value="Not sure" className="bg-slate-800">
-                          Not sure
-                        </option>
-                      </select>
-                    </div>
+                            <div className="col-span-2">
+                              <label className="block text-sm font-semibold text-slate-300 mb-2">Where did you find it? *</label>
+                              <select
+                                required
+                                value={foundFormData.location}
+                                onChange={(e) => setFoundFormData({ ...foundFormData, location: e.target.value })}
+                                className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-green-500/50 focus:ring-2 focus:ring-green-500/20 transition-all"
+                              >
+                                <option value="" disabled className="bg-slate-800">Select a location</option>
+                                {Object.keys(NITK_LOCATIONS).map((locationKey) => (
+                                  <option key={locationKey} value={locationKey} className="bg-slate-800">
+                                    {locationKey}
+                                  </option>
+                                ))}
+                                <option value="Not sure" className="bg-slate-800">
+                                  Not sure
+                                </option>
+                              </select>
+                            </div>
+                          </div>
 
-                    <button
-                      type="submit"
-                      className="w-full mt-8 px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold rounded-lg transition-all duration-300 shadow-lg shadow-green-500/20"
-                    >
-                      Submit
-                    </button>
-                  </form>
-                </div>
-
-                <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 rounded-xl border border-slate-700/50 p-10 backdrop-blur-sm h-fit flex flex-col items-center justify-center">
-                  <div className="w-full h-64 bg-slate-800 rounded-lg border border-slate-700 flex items-center justify-center mb-6">
-                    {foundFormData.image ? (
-                      <img
-                        src={URL.createObjectURL(foundFormData.image)}
-                        alt="Preview"
-                        className="w-full h-full object-cover rounded-lg"
-                      />
-                    ) : (
-                      <div className="text-center">
-                        <Upload className="w-12 h-12 text-gray-600 mx-auto mb-2" />
-                        <p className="text-gray-500">Upload image to preview</p>
+                          <div className="border-t border-slate-700/50 pt-6">
+                            <div className="space-y-3">
+                              <button
+                                type="submit"
+                                disabled={!foundFormData.image || !foundFormData.name || !foundFormData.category || !foundFormData.raw_description || !foundFormData.location}
+                                className="w-full px-6 py-4 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 disabled:from-slate-700 disabled:to-slate-700 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl flex items-center justify-center gap-3"
+                              >
+                                <Package className="w-5 h-5" />
+                                Submit Found Item Report
+                              </button>
+                              <p className="text-xs text-slate-500 text-center">We'll immediately start searching for the owner</p>
+                            </div>
+                          </div>
+                        </form>
                       </div>
-                    )}
-                  </div>
-                  <div className="w-full space-y-3">
-                    <div className="p-3 bg-slate-800/50 rounded-lg">
-                      <p className="text-xs text-gray-500">Item Name</p>
-                      <p className="text-white font-semibold">{foundFormData.name || 'Not provided'}</p>
                     </div>
-                    <div className="p-3 bg-slate-800/50 rounded-lg">
-                      <p className="text-xs text-gray-500">Raw description</p>
-                      <p className="text-white font-semibold">{foundFormData.raw_description || 'Not provided'}</p>
-                    </div>
-                    <div className="p-3 bg-slate-800/50 rounded-lg">
-                      <p className="text-xs text-gray-500">Category</p>
-                      <p className="text-white font-semibold">{foundFormData.category || 'Not provided'}</p>
-                    </div>
-                    <div className="p-3 bg-slate-800/50 rounded-lg">
-                      <p className="text-xs text-gray-500">Location</p>
-                      <p className="text-white font-semibold">{foundFormData.location || 'Not provided'}</p>
+                    
+                    <div>
+                      <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 rounded-xl border border-slate-700/50 p-6 backdrop-blur-sm sticky top-8">
+                        <div className="flex items-center gap-3 mb-6">
+                          <div className="bg-green-500/20 p-2 rounded-lg">
+                            <Package className="w-5 h-5 text-green-400" />
+                          </div>
+                          <h3 className="text-lg font-bold text-white">Preview</h3>
+                        </div>
+                        
+                        <div className="mb-6">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-xs font-medium text-slate-400">COMPLETION</span>
+                            <span className="text-xs text-slate-400">
+                              {Math.round(([foundFormData.image, foundFormData.name, foundFormData.category, foundFormData.raw_description, foundFormData.location].filter(Boolean).length / 5) * 100)}%
+                            </span>
+                          </div>
+                          <div className="w-full bg-slate-800 rounded-full h-1.5">
+                            <div 
+                              className="bg-gradient-to-r from-green-400 to-green-500 h-1.5 rounded-full transition-all duration-500"
+                              style={{
+                                width: `${([foundFormData.image, foundFormData.name, foundFormData.category, foundFormData.raw_description, foundFormData.location].filter(Boolean).length / 5) * 100}%`
+                              }}
+                            ></div>
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-4">
+                          <div className="w-full h-48 bg-slate-800 rounded-lg border border-slate-700 flex items-center justify-center overflow-hidden">
+                            {foundFormData.image ? (
+                              <img
+                                src={URL.createObjectURL(foundFormData.image)}
+                                alt="Preview"
+                                className="w-full h-full object-cover rounded-lg"
+                              />
+                            ) : (
+                              <div className="text-center">
+                                <Upload className="w-8 h-8 text-slate-600 mx-auto mb-2" />
+                                <p className="text-slate-500 text-sm">Image preview</p>
+                              </div>
+                            )}
+                          </div>
+                          
+                          <div className="space-y-3">
+                            <div className="p-3 bg-slate-800/30 rounded-lg border border-slate-700/50 relative">
+                              <p className="text-xs text-slate-500 font-medium mb-1">ITEM NAME</p>
+                              <p className="text-white font-semibold">{foundFormData.name || 'Enter item name...'}</p>
+                              {foundFormData.name && <div className="absolute top-2 right-2 w-2 h-2 bg-green-400 rounded-full"></div>}
+                            </div>
+                            <div className="p-3 bg-slate-800/30 rounded-lg border border-slate-700/50 relative">
+                              <p className="text-xs text-slate-500 font-medium mb-1">CATEGORY</p>
+                              <p className="text-white font-semibold">{foundFormData.category || 'Enter category...'}</p>
+                              {foundFormData.category && <div className="absolute top-2 right-2 w-2 h-2 bg-green-400 rounded-full"></div>}
+                            </div>
+                            <div className="p-3 bg-slate-800/30 rounded-lg border border-slate-700/50 relative">
+                              <p className="text-xs text-slate-500 font-medium mb-1">LOCATION</p>
+                              <p className="text-white font-semibold">{foundFormData.location || 'Select location...'}</p>
+                              {foundFormData.location && <div className="absolute top-2 right-2 w-2 h-2 bg-green-400 rounded-full"></div>}
+                            </div>
+                            <div className="p-3 bg-slate-800/30 rounded-lg border border-slate-700/50 relative">
+                              <p className="text-xs text-slate-500 font-medium mb-1">DESCRIPTION</p>
+                              <p className="text-white text-sm leading-relaxed">{foundFormData.raw_description || 'Enter description...'}</p>
+                              {foundFormData.raw_description && <div className="absolute top-2 right-2 w-2 h-2 bg-green-400 rounded-full"></div>}
+                            </div>
+                          </div>
+                          
+                          <div className="border-t border-slate-700/50 pt-4">
+                            <div className="flex items-center gap-2 text-xs text-slate-500">
+                              <Clock className="w-3 h-3" />
+                              <span>AI matching will begin after submission</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
               </div>
             )}
 
@@ -1373,8 +1555,21 @@ export default function Dashboard() {
                 <div className="mb-16">
                   <h2 className="text-3xl font-bold text-white mb-8">Items You Lost</h2>
                   {lostItems.length === 0 ? (
-                    <div className="text-center py-12 text-gray-400">
-                      <p>No lost items reported yet.</p>
+                    <div className="text-center py-16">
+                      <div className="bg-slate-800/30 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6">
+                        <Search className="w-10 h-10 text-slate-500" />
+                      </div>
+                      <h3 className="text-xl font-semibold text-slate-300 mb-2">No Lost Items Yet</h3>
+                      <p className="text-slate-400 mb-6">When you lose something, report it here and we'll help you find it.</p>
+                      <button
+                        onClick={() => {
+                          if (!checkPhoneNumber()) return;
+                          setActiveView('lost');
+                        }}
+                        className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
+                      >
+                        Report Lost Item
+                      </button>
                     </div>
                   ) : (
                     <div className="space-y-6">
@@ -1475,8 +1670,21 @@ export default function Dashboard() {
                 <div>
                   <h2 className="text-3xl font-bold text-white mb-8">Items You Found</h2>
                   {foundItems.length === 0 ? (
-                    <div className="text-center py-12 text-gray-400">
-                      <p>No found items reported yet.</p>
+                    <div className="text-center py-16">
+                      <div className="bg-slate-800/30 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6">
+                        <Package className="w-10 h-10 text-slate-500" />
+                      </div>
+                      <h3 className="text-xl font-semibold text-slate-300 mb-2">No Found Items Yet</h3>
+                      <p className="text-slate-400 mb-6">When you find something, report it here to help others recover their belongings.</p>
+                      <button
+                        onClick={() => {
+                          if (!checkPhoneNumber()) return;
+                          setActiveView('found');
+                        }}
+                        className="px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors"
+                      >
+                        Report Found Item
+                      </button>
                     </div>
                   ) : (
                     <div className="space-y-6">

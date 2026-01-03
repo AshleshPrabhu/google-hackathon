@@ -32,7 +32,7 @@ export default function Header({ onGetStarted, onSignIn }: HeaderProps) {
           </button>
           <button 
             onClick={onGetStarted}
-            className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white px-6 py-2 rounded-lg font-semibold transition-all duration-300 shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 flex items-center gap-2"
+            className="bg-slate-800 hover:bg-slate-700 border border-slate-600 hover:border-slate-500 text-white px-6 py-2 rounded-lg font-semibold transition-all duration-300 flex items-center gap-2"
           >
             Get started
             <ArrowRight className="w-4 h-4" />
